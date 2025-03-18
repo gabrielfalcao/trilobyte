@@ -1,0 +1,23 @@
+cargo-features = ["per-package-target"]
+
+[package]
+name = "trilobyte"
+version = "0.0.1"
+edition = "2024"
+autoexamples = false
+autobenches = false
+readme = "README.md"
+homepage = "https://github.com/gabrielfalcao/trilobyte"
+license = "MIT"
+
+[package.metadata]
+cargo-args = ["-Zmtime-on-use", "-Zavoid-dev-deps", "-Zcustom_mir"]
+
+
+[lib]
+name = "trilobyte"
+path = "trilobyte/lib.rs"
+bench = false
+
+[dependencies]
+serde = { version = "1.0.219", features = ["derive"] }
