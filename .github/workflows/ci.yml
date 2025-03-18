@@ -29,6 +29,10 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+      - name: doc
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc
 
   macos:
     name: Check, Build and Test
@@ -51,6 +55,10 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+      - name: doc
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc
 
   windows:
     name: Check, Build and Test
@@ -73,3 +81,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+      - name: doc
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc
