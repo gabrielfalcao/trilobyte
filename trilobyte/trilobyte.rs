@@ -20,7 +20,7 @@ use crate::errors::TriloByteParseError;
 /// ```
 ///
 
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Debug)]
+#[derive(Clone, PartialEq, Eq, Hash, Copy)]
 pub struct TriloByte(pub bool, pub bool, pub bool);
 
 /// `high_water_mark_u8_to_trilobyte` reduces [`u8`] to `3` bits so as to fit in one [`TriloByte`].
@@ -155,8 +155,34 @@ impl TriloByte {
         self.into_u8().to_string()
     }
 
+    /// `rewrite_from` rewrites a [`TriloByte`] with the values of another [`TriloByte`]
+    ///
+    /// Example:
+    /// ```
+    /// use trilobyte::TriloByte;
+    ///
+    /// let mut trilobyte = TriloByte(true, false, true);
+    /// assert_eq!(trilobyte.to_string(), "101");
+    /// trilobyte.rewrite_from(&TriloByte(false, true, false));
+    /// assert_eq!(trilobyte.to_string(), "010");
+    /// ```
+    pub fn rewrite_from(&mut self, other: &Self) {
+        self.0 = other.0;
+        self.1 = other.1;
+        self.2 = other.2;
+    }
 }
 
+impl std::cmp::PartialOrd for TriloByte {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.into_u8().partial_cmp(&other.into_u8())
+    }
+}
+impl std::cmp::Ord for TriloByte {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.into_u8().cmp(&other.into_u8())
+    }
+}
 impl From<u8> for TriloByte {
     fn from(val: u8) -> TriloByte {
         TriloByte::from_u8_highwatermark(val)
@@ -182,6 +208,90 @@ impl Into<u8> for TriloByte {
 impl std::fmt::Display for TriloByte {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.into_string())
+    }
+}
+
+impl std::fmt::Debug for TriloByte {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "TriloByte[{}]", self.into_string())
+    }
+}
+
+impl std::ops::Not for TriloByte {
+    type Output = TriloByte;
+
+    fn not(self) -> TriloByte {
+        TriloByte::from(!self.into_u8())
+    }
+}
+
+impl std::ops::BitAnd for TriloByte {
+    type Output = TriloByte;
+
+    fn bitand(self, rhs: TriloByte) -> TriloByte {
+        TriloByte::from(self.into_u8() & rhs.into_u8())
+    }
+}
+
+impl std::ops::BitOr for TriloByte {
+    type Output = TriloByte;
+
+    fn bitor(self, rhs: TriloByte) -> TriloByte {
+        TriloByte::from(self.into_u8() | rhs.into_u8())
+    }
+}
+
+impl std::ops::BitXor for TriloByte {
+    type Output = TriloByte;
+
+    fn bitxor(self, rhs: TriloByte) -> TriloByte {
+        TriloByte::from(self.into_u8() ^ rhs.into_u8())
+    }
+}
+
+impl std::ops::Shr for TriloByte {
+    type Output = TriloByte;
+
+    fn shr(self, rhs: TriloByte) -> TriloByte {
+        TriloByte::from(self.into_u8() >> rhs.into_u8())
+    }
+}
+
+impl std::ops::Shl for TriloByte {
+    type Output = TriloByte;
+
+    fn shl(self, rhs: TriloByte) -> TriloByte {
+        TriloByte::from(self.into_u8() << rhs.into_u8())
+    }
+}
+
+impl std::ops::BitAndAssign for TriloByte {
+    fn bitand_assign(&mut self, rhs: TriloByte) {
+        self.rewrite_from(&(*self & rhs));
+    }
+}
+
+impl std::ops::BitOrAssign for TriloByte {
+    fn bitor_assign(&mut self, rhs: TriloByte) {
+        self.rewrite_from(&(*self | rhs));
+    }
+}
+
+impl std::ops::BitXorAssign for TriloByte {
+    fn bitxor_assign(&mut self, rhs: TriloByte) {
+        self.rewrite_from(&(*self ^ rhs));
+    }
+}
+
+impl std::ops::ShrAssign for TriloByte {
+    fn shr_assign(&mut self, rhs: TriloByte) {
+        self.rewrite_from(&(*self >> rhs));
+    }
+}
+
+impl std::ops::ShlAssign for TriloByte {
+    fn shl_assign(&mut self, rhs: TriloByte) {
+        self.rewrite_from(&(*self << rhs));
     }
 }
 
@@ -343,5 +453,105 @@ mod test_trilobyte {
         assert_eq!(TriloByte::from(0b010).to_string_octal(), "2");
         assert_eq!(TriloByte::from(0b001).to_string_octal(), "1");
         assert_eq!(TriloByte::from(0b000).to_string_octal(), "0");
+    }
+    #[test]
+    fn test_order() {
+        let unsorted = vec![
+            TriloByte::from(0b111),
+            TriloByte::from(0b101),
+            TriloByte::from(0b100),
+            TriloByte::from(0b011),
+            TriloByte::from(0b110),
+            TriloByte::from(0b001),
+            TriloByte::from(0b010),
+            TriloByte::from(0b000),
+        ];
+        let sorted = vec![
+            TriloByte::from(0b000),
+            TriloByte::from(0b001),
+            TriloByte::from(0b010),
+            TriloByte::from(0b011),
+            TriloByte::from(0b100),
+            TriloByte::from(0b101),
+            TriloByte::from(0b110),
+            TriloByte::from(0b111),
+        ];
+        let mut result = unsorted.clone();
+        result.sort();
+        assert_eq!(result, sorted);
+    }
+    #[test]
+    fn test_xor() {
+        assert_eq!(TriloByte::from(0b111) ^ TriloByte::from(0b111), TriloByte::from(0b000));
+        assert_eq!(TriloByte::from(0b111) ^ TriloByte::from(0b010), TriloByte::from(0b101));
+        assert_eq!(TriloByte::from(0b011) ^ TriloByte::from(0b110), TriloByte::from(0b101));
+    }
+
+    #[test]
+    fn test_trilobyte_and() {
+        assert_eq!(TriloByte::from(0b101) & TriloByte::from(0b101), TriloByte::from(0b101));
+    }
+
+    #[test]
+    fn test_trilobyte_or() {
+        assert_eq!(TriloByte::from(0) | TriloByte::from(1), TriloByte::from(1));
+        assert_eq!(TriloByte::from(1) | TriloByte::from(0), TriloByte::from(1));
+    }
+
+    #[test]
+    fn test_trilobyte_shr() {
+        assert_eq!(TriloByte::from(0b101) >> TriloByte::from(1), TriloByte::from(0b10));
+    }
+
+    #[test]
+    fn test_trilobyte_shl() {
+        assert_eq!(TriloByte::from(0b1) << TriloByte::from(2), TriloByte::from(0b100));
+    }
+
+    #[test]
+    fn test_trilobyte_xor() {
+        assert_eq!(TriloByte::from(0b100) ^ TriloByte::from(0b001), TriloByte::from(0b101));
+    }
+
+    #[test]
+    fn test_rewrite_from() {
+        let mut trilobyte = TriloByte::from(0b100);
+        trilobyte.rewrite_from(&TriloByte::from(0b101));
+        assert_eq!(trilobyte, TriloByte::from(0b101));
+    }
+
+    #[test]
+    fn test_trilobyte_and_assign() {
+        let mut value = TriloByte::from(0b101);
+        value &= TriloByte::from(0b101);
+        assert_eq!(value, TriloByte::from(0b101));
+    }
+
+    #[test]
+    fn test_trilobyte_or_assign() {
+        let mut value = TriloByte::from(0);
+        value |= TriloByte::from(1);
+        assert_eq!(value, TriloByte::from(1));
+    }
+
+    #[test]
+    fn test_trilobyte_shr_assign() {
+        let mut value = TriloByte::from(0b101);
+        value >>= TriloByte::from(1);
+        assert_eq!(value, TriloByte::from(0b10));
+    }
+
+    #[test]
+    fn test_trilobyte_shl_assign() {
+        let mut value = TriloByte::from(0b1);
+        value <<= TriloByte::from(2);
+        assert_eq!(value, TriloByte::from(0b100));
+    }
+
+    #[test]
+    fn test_trilobyte_xor_assign() {
+        let mut value = TriloByte::from(0b100);
+        value ^= TriloByte::from(0b001);
+        assert_eq!(value, TriloByte::from(0b101));
     }
 }
