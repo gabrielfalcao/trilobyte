@@ -1,7 +1,5 @@
-use serde::{Serialize, Deserialize};
-
-/// `TriloByteParseError` represents errors when converting any types to [`TriloByte`].
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+/// `TriloByteParseError` represents errors when converting any types to `TriloByte`.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TriloByteParseError(pub String, pub u8);
 impl std::error::Error for TriloByteParseError {}
 impl std::fmt::Display for TriloByteParseError {

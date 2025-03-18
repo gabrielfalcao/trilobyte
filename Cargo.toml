@@ -19,6 +19,3 @@ cargo-args = ["-Zmtime-on-use", "-Zavoid-dev-deps", "-Zcustom_mir"]
 name = "trilobyte"
 path = "trilobyte/lib.rs"
 bench = false
-
-[dependencies]
-serde = { version = "1.0.219", features = ["derive"] }
