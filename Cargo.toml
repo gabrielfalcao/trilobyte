@@ -4,6 +4,7 @@ cargo-features = ["per-package-target"]
 name = "trilobyte"
 version = "0.0.1"
 edition = "2024"
+description = "data structure representing `3` bits"
 autoexamples = false
 autobenches = false
 readme = "README.md"
