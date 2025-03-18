@@ -14,3 +14,5 @@ For example, a unix file with mode `007` can be represented with
     TriloByte(true, true, true),
 )
 ```
+
+[![Continuous Integration](https://github.com/gabrielfalcao/trilobyte/actions/workflows/ci.yml/badge.svg)](https://github.com/gabrielfalcao/trilobyte/actions/workflows/ci.yml)
