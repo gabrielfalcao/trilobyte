@@ -7,8 +7,19 @@ use crate::errors::TriloByteParseError;
 /// For example, a unix file with mode `007` can be represented with
 /// `3` trilobytes:
 ///
-/// `(TriloByte(false, false, false), TriloByte(false, false, false), TriloByte(true, true, true))`
+/// ```
+/// use trilobyte::TriloByte;
 ///
+/// let trilobytes = [
+///     TriloByte(false, false, false),
+///     TriloByte(false, false, false),
+///     TriloByte(true, true, true),
+/// ];
+/// let mode = trilobytes.iter().map(|t| t.to_string_octal()).collect::<String>();
+/// assert_eq!(mode, "007");
+/// ```
+///
+
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Debug)]
 pub struct TriloByte(pub bool, pub bool, pub bool);
 
@@ -27,7 +38,7 @@ impl TriloByte {
 
     /// `from_u8` creates a new [`TriloByte`] from a [`u8`], returns
     /// [`TriloByteParseError`] if the [`u8`] value is greater than
-    /// `7`, unlike [`from_u8_highwatermark`].
+    /// `7`, unlike [`from_u8_highwatermark`](#method.from_u8_highwatermark).
     ///
     /// Example:
     /// ```
@@ -56,10 +67,11 @@ impl TriloByte {
     /// ```
     pub fn from_u8_highwatermark(val: u8) -> TriloByte {
         let val = high_water_mark_u8_to_trilobyte(val);
-        let t = (val >> 0b010 & !0b110) == 0b1;
-        let l = (val >> 0b001 & !0b010) == 0b1;
-        let b = (val >> 0b000 & !0b110) == 0b1;
-        TriloByte(t, l, b)
+        TriloByte(
+            (val >> 0b010 & !0b110) == 0b1,
+            (val >> 0b001 & !0b010) == 0b1,
+            (val >> 0b000 & !0b110) == 0b1,
+        )
     }
 
     /// `to_array` returns [`array`] of length `3` where each u8 is either 0 or 1.
@@ -103,6 +115,46 @@ impl TriloByte {
     pub fn into_string(self) -> String {
         self.to_array().iter().map(|b| b.to_string()).collect()
     }
+
+    /// `into_u32` returns a value [`u32`] represented by a [`TriloByte`].
+    ///
+    /// Example:
+    /// ```
+    /// use trilobyte::TriloByte;
+    ///
+    /// let trilobyte = TriloByte::from(7);
+    /// assert_eq!(trilobyte.into_u32(), 7);
+    /// ```
+    pub fn into_u32(self) -> u32 {
+        u32::from_str_radix(&self.into_string(), 2).unwrap()
+    }
+
+    /// `into_u8` returns a value [`u8`] represented by a [`TriloByte`].
+    ///
+    /// Example:
+    /// ```
+    /// use trilobyte::TriloByte;
+    ///
+    /// let trilobyte = TriloByte::from(7);
+    /// assert_eq!(trilobyte.into_u8(), 7);
+    /// ```
+    pub fn into_u8(self) -> u8 {
+        u8::from_str_radix(&self.into_string(), 2).unwrap()
+    }
+
+    /// `to_string_octal` returns [`String`] representing the [`TriloByte`] as octal number.
+    ///
+    /// Example:
+    /// ```
+    /// use trilobyte::TriloByte;
+    ///
+    /// let trilobyte = TriloByte::from(5);
+    /// assert_eq!(trilobyte.to_string_octal(), "5");
+    /// ```
+    pub fn to_string_octal(self) -> String {
+        self.into_u8().to_string()
+    }
+
 }
 
 impl From<u8> for TriloByte {
@@ -116,6 +168,17 @@ impl Into<String> for TriloByte {
     }
 }
 
+impl Into<u32> for TriloByte {
+    fn into(self) -> u32 {
+        self.into_u32()
+    }
+}
+impl Into<u8> for TriloByte {
+    fn into(self) -> u8 {
+        self.into_u8()
+    }
+}
+
 impl std::fmt::Display for TriloByte {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.into_string())
@@ -124,43 +187,19 @@ impl std::fmt::Display for TriloByte {
 
 #[cfg(test)]
 mod test_high_water_mark_u8_to_trilobyte {
-    use crate::{high_water_mark_u8_to_trilobyte, assert_bits_eq};
+    use crate::{assert_bits_eq, high_water_mark_u8_to_trilobyte};
 
     #[test]
     fn test_high_water_mark_u8_to_trilobyte() {
-        assert_bits_eq!(
-            high_water_mark_u8_to_trilobyte(0b1001),
-            0b001
-        );
-        assert_bits_eq!(
-            high_water_mark_u8_to_trilobyte(0b1010),
-            0b010
-        );
+        assert_bits_eq!(high_water_mark_u8_to_trilobyte(0b1001), 0b001);
+        assert_bits_eq!(high_water_mark_u8_to_trilobyte(0b1010), 0b010);
 
-        assert_bits_eq!(
-            high_water_mark_u8_to_trilobyte(0b11111001),
-            0b001
-        );
-        assert_bits_eq!(
-            high_water_mark_u8_to_trilobyte(0b11111010),
-            0b010
-        );
-        assert_bits_eq!(
-            high_water_mark_u8_to_trilobyte(0b11111100),
-            0b100
-        );
-        assert_bits_eq!(
-            high_water_mark_u8_to_trilobyte(0b11111101),
-            0b101
-        );
-        assert_bits_eq!(
-            high_water_mark_u8_to_trilobyte(0b11111110),
-            0b110
-        );
-        assert_bits_eq!(
-            high_water_mark_u8_to_trilobyte(0b11111111),
-            0b111
-        );
+        assert_bits_eq!(high_water_mark_u8_to_trilobyte(0b11111001), 0b001);
+        assert_bits_eq!(high_water_mark_u8_to_trilobyte(0b11111010), 0b010);
+        assert_bits_eq!(high_water_mark_u8_to_trilobyte(0b11111100), 0b100);
+        assert_bits_eq!(high_water_mark_u8_to_trilobyte(0b11111101), 0b101);
+        assert_bits_eq!(high_water_mark_u8_to_trilobyte(0b11111110), 0b110);
+        assert_bits_eq!(high_water_mark_u8_to_trilobyte(0b11111111), 0b111);
     }
 }
 
@@ -253,5 +292,56 @@ mod test_trilobyte {
         assert_eq!(TriloByte::from_u8_highwatermark(0b11111001), TriloByte(false, false, true));
         assert_eq!(TriloByte::from_u8_highwatermark(0b11111010), TriloByte(false, true, false));
         assert_eq!(TriloByte::from_u8_highwatermark(0b11111100), TriloByte(true, false, false));
+    }
+
+    #[test]
+    fn test_into_u32() {
+        assert_eq!(TriloByte::from(0b111).into_u32(), 7);
+        assert_eq!(TriloByte::from(0b110).into_u32(), 6);
+        assert_eq!(TriloByte::from(0b101).into_u32(), 5);
+        assert_eq!(TriloByte::from(0b100).into_u32(), 4);
+        assert_eq!(TriloByte::from(0b011).into_u32(), 3);
+        assert_eq!(TriloByte::from(0b010).into_u32(), 2);
+        assert_eq!(TriloByte::from(0b001).into_u32(), 1);
+        assert_eq!(TriloByte::from(0b000).into_u32(), 0);
+        assert_eq!(Into::<u32>::into(TriloByte::from(0b111)), 7);
+        assert_eq!(Into::<u32>::into(TriloByte::from(0b110)), 6);
+        assert_eq!(Into::<u32>::into(TriloByte::from(0b101)), 5);
+        assert_eq!(Into::<u32>::into(TriloByte::from(0b100)), 4);
+        assert_eq!(Into::<u32>::into(TriloByte::from(0b011)), 3);
+        assert_eq!(Into::<u32>::into(TriloByte::from(0b010)), 2);
+        assert_eq!(Into::<u32>::into(TriloByte::from(0b001)), 1);
+        assert_eq!(Into::<u32>::into(TriloByte::from(0b000)), 0);
+    }
+    #[test]
+    fn test_into_u8() {
+        assert_eq!(TriloByte::from(0b111).into_u8(), 7);
+        assert_eq!(TriloByte::from(0b110).into_u8(), 6);
+        assert_eq!(TriloByte::from(0b101).into_u8(), 5);
+        assert_eq!(TriloByte::from(0b100).into_u8(), 4);
+        assert_eq!(TriloByte::from(0b011).into_u8(), 3);
+        assert_eq!(TriloByte::from(0b010).into_u8(), 2);
+        assert_eq!(TriloByte::from(0b001).into_u8(), 1);
+        assert_eq!(TriloByte::from(0b000).into_u8(), 0);
+
+        assert_eq!(Into::<u8>::into(TriloByte::from(0b111)), 7);
+        assert_eq!(Into::<u8>::into(TriloByte::from(0b110)), 6);
+        assert_eq!(Into::<u8>::into(TriloByte::from(0b101)), 5);
+        assert_eq!(Into::<u8>::into(TriloByte::from(0b100)), 4);
+        assert_eq!(Into::<u8>::into(TriloByte::from(0b011)), 3);
+        assert_eq!(Into::<u8>::into(TriloByte::from(0b010)), 2);
+        assert_eq!(Into::<u8>::into(TriloByte::from(0b001)), 1);
+        assert_eq!(Into::<u8>::into(TriloByte::from(0b000)), 0);
+    }
+    #[test]
+    fn test_to_string_octal() {
+        assert_eq!(TriloByte::from(0b111).to_string_octal(), "7");
+        assert_eq!(TriloByte::from(0b110).to_string_octal(), "6");
+        assert_eq!(TriloByte::from(0b101).to_string_octal(), "5");
+        assert_eq!(TriloByte::from(0b100).to_string_octal(), "4");
+        assert_eq!(TriloByte::from(0b011).to_string_octal(), "3");
+        assert_eq!(TriloByte::from(0b010).to_string_octal(), "2");
+        assert_eq!(TriloByte::from(0b001).to_string_octal(), "1");
+        assert_eq!(TriloByte::from(0b000).to_string_octal(), "0");
     }
 }
