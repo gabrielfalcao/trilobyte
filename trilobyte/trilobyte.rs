@@ -97,7 +97,7 @@ impl TriloByte {
     /// use trilobyte::TriloByte;
     ///
     /// let trilobyte = TriloByte(false, true, false);
-    /// assert_eq!(trilobyte.to_array(), [0, 1, 0]);
+    /// assert_eq!(trilobyte.to_tuple(), (0, 1, 0));
     /// ```
     pub fn to_tuple(self) -> (u8, u8, u8) {
         self.to_array().into()
