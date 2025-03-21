@@ -1,6 +1,6 @@
 [package]
 name = "trilobyte"
-version = "0.0.1"
+version = "0.1.0"
 edition = "2024"
 description = "data structure representing `3` bits"
 autoexamples = false

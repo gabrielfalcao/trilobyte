@@ -22,20 +22,14 @@ macro_rules! assert_bits_eq {
     ($left:expr, $right:expr $(,)?) => {
         match (&$left, &$right) {
             (left_val, right_val) => {
-                if !(*left_val == *right_val) {
-                    let kind = core::panicking::AssertKind::Eq;
-                    core::panicking::assert_failed(kind, &format!("{:b}", *left_val as u8), &format!("{:b}", *right_val as u8), core::option::Option::None);
-                }
+                assert_eq!(format!("{:b}", *left_val as u8), format!("{:b}", *right_val as u8));
             }
         }
     };
     ($left:expr, $right:expr, $($arg:tt)+) => {
         match (&$left, &$right) {
             (left_val, right_val) => {
-                if !(*left_val == *right_val) {
-                    let kind = core::panicking::AssertKind::Eq;
-                    core::panicking::assert_failed(kind, &format!("{:b}", *left_val as u8), &format!("{:b}", *right_val as u8), core::option::Option::Some(core::format_args!($($arg)+)));
-                }
+                assert_eq!(format!("{:b}", *left_val as u8), format!("{:b}", *right_val as u8), $arg);
             }
         }
     };
