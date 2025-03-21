@@ -1,8 +1,6 @@
 //! trilobyte
 //!
 //! This crate provides the [`TriloByte`] data-structure.
-#![allow(internal_features)]
-#![feature(panic_internals)]
 
 pub mod errors;
 pub use errors::TriloByteParseError;
