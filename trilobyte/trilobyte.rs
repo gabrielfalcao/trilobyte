@@ -20,7 +20,7 @@ use crate::errors::TriloByteParseError;
 /// ```
 ///
 
-#[derive(Clone, PartialEq, Eq, Hash, Copy)]
+#[derive(Clone, PartialEq, Eq, Hash, Copy, Default)]
 pub struct TriloByte(pub bool, pub bool, pub bool);
 
 /// `high_water_mark_u8_to_trilobyte` reduces [`u8`] to `3` bits so as to fit in one [`TriloByte`].
@@ -553,5 +553,10 @@ mod test_trilobyte {
         let mut value = TriloByte::from(0b100);
         value ^= TriloByte::from(0b001);
         assert_eq!(value, TriloByte::from(0b101));
+    }
+
+    #[test]
+    fn test_trilobyte_default() {
+        assert_eq!(TriloByte::default(), TriloByte::from(0b000));
     }
 }

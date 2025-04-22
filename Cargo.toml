@@ -1,6 +1,6 @@
 [package]
 name = "trilobyte"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "data structure representing `3` bits"
 autoexamples = false
@@ -8,10 +8,6 @@ autobenches = false
 readme = "README.md"
 homepage = "https://github.com/gabrielfalcao/trilobyte"
 license = "MIT"
-
-[package.metadata]
-cargo-args = ["-Zmtime-on-use", "-Zavoid-dev-deps", "-Zcustom_mir"]
-
 
 [lib]
 name = "trilobyte"
